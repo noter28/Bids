@@ -1,9 +1,20 @@
-from app.api.models import NoteSchema
-from app.db import notes, database
+from app.api.models import NoteSchema, BidSchema
+from app.db import notes, bids, database
 
 
-async def post(payload: NoteSchema):
-    query = notes.insert().values(title=payload.title, description=payload.description)
+async def post(payload: BidSchema):
+    query = bids.insert().values(name=payload.client.name,
+                                 clientLeiCode=payload.client.leiCode,
+                                 clientType=payload.client.clientType,
+                                 beginDate=payload.beginDate,
+                                 osrName=payload.distributionCombinations[0]['osr']['name'],
+                                 osrLeiCode=payload.distributionCombinations[0]['osr']['leiCode'],
+                                 # ONE_A=payload.distributionCombinations[0]['powerClassAndGroups']['ONE_A'],
+                                 # ONE_B=payload.distributionCombinations[0]['powerClassAndGroups']['ONE_B'],
+                                 # TWO_A=payload.distributionCombinations[0]['powerClassAndGroups']['TWO_A'],
+                                 # TWO_B=payload.distributionCombinations[0]['powerClassAndGroups']['TWO_B'],
+                                 totalVolume=payload.totalVolume
+                                 )
     return await database.execute(query=query)
 
 
@@ -13,7 +24,7 @@ async def get(id: int):
 
 
 async def get_all():
-    query = notes.select()
+    query = bids.select()
     return await database.fetch_all(query=query)
 
 
