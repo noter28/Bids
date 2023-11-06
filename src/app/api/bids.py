@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.api import crud
-from app.api.models import NoteDB, NoteSchema, BidSchema, BidDB
-from typing import List
+from app.api.models import BidSchema, BidDB
 
 router = APIRouter()
 
