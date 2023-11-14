@@ -7,7 +7,7 @@ router = APIRouter()
 
 
 @router.post("/", status_code=201)
-async def create_note(payload: BidSchema):
+async def create_bid(payload: BidSchema):
     bid_id = await crud.post(payload)
 
     response_object = {
@@ -22,7 +22,6 @@ async def create_note(payload: BidSchema):
             'osrName': payload.distributionCombinations[0]['osr']['name'],
             'osrLeiCode': payload.distributionCombinations[0]['osr']['leiCode'],
             'osrDistributions': payload.osrDistributions,
-            'totalVolume': payload.totalVolume
         }
     }
     return response_object

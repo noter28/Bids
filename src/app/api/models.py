@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class Client(BaseModel):
@@ -9,19 +10,10 @@ class Client(BaseModel):
 
 class BidSchema(BaseModel):
     client: Client
-    totalVolume: str
     beginDate: str
     distributionCombinations: list
     osrDistributions: list
 
 
-class NoteSchema(BaseModel):
-    title: str
-    description: str
-
-
 class BidDB(BidSchema):
-    id: int
-
-class NoteDB(NoteSchema):
     id: int

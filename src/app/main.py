@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from app.api import bids, ping
 from app.db import engine, database, metadata
 
-metadata.create_all(engine)
+# metadata.create_all(engine)
 
 app = FastAPI()
 
