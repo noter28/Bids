@@ -8,8 +8,12 @@ router = APIRouter()
 
 @router.post("/", status_code=201)
 async def create_bid(payload: BidSchema):
-    bid_id = await crud.post(payload)
-
+    client_exist = await crud.client_exist(payload)
+    if not client_exist:
+        client_id = await crud.client_insert(payload)
+    else:
+        client_id = dict(client_exist._mapping)['id']
+    bid_id = await crud.bid_insert(payload, client_id)
     response_object = {
         'status': 'success',
         'message': 'Bids for OSR was successfully added',

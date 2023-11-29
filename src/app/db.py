@@ -2,6 +2,7 @@ import os
 
 from sqlalchemy import (
     Column,
+    UniqueConstraint,
     DateTime,
     Date,
     Integer,
@@ -26,40 +27,40 @@ metadata = MetaData()
 bids = Table(
     "bids",
     metadata,
-    Column("id", Integer, primary_key=True),
-    Column("beginDate", Date),
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("beginDate", Date, nullable=False),
     Column("ONE_A", Integer),
     Column("ONE_B", Integer),
     Column("TWO_A", Integer),
     Column("TWO_B", Integer),
-    Column("clientLeiCode", String(50)),
-    Column("clientLeiCode", String(50)),
+    Column("clientLeiCode", String(50), nullable=False),
+    Column("osrName", String(50), nullable=False),
     Column("created_date", DateTime, server_default=func.now(), nullable=False),
     Column('last_updated', DateTime, nullable=True),
-    # Column("client_id", Integer, ForeignKey("client.client_id"), nullable=False),
+    Column("client_id", Integer, ForeignKey("client.id"), nullable=False),
+    UniqueConstraint('beginDate', 'ONE_A', 'ONE_B', 'TWO_A', 'TWO_B', 'clientLeiCode', 'osrName', name='uix_1'),
 )
 
 
 osr = Table(
     "osr",
     metadata,
-    Column("osr_id", Integer, primary_key=True),
-    Column("osrName", String(100)),
-    Column("osrLeiCode", String(100)),
+    Column("id", Integer, primary_key=True),
+    Column("name", String(100)),
+    Column("leiCode", String(100)),
     Column("created_date", DateTime, server_default=func.now(), nullable=False),
-    Column("updated_date", DateTime, onupdate=func.now(), nullable=False),
+    Column("updated_date", DateTime, onupdate=func.now(), nullable=True),
 )
 
 
 client = Table(
     "client",
     metadata,
-    Column("client_id", Integer, primary_key=True),
+    Column("id", Integer, primary_key=True),
     Column("name", String(50)),
-    Column("clientLeiCode", String(50)),
-    Column("clientType", String(50)),
+    Column("leiCode", String(50)),
     Column("created_date", DateTime, server_default=func.now(), nullable=False),
-    Column("updated_date", DateTime, onupdate=func.now(), nullable=False),
+    Column("updated_date", DateTime, onupdate=func.now(), nullable=True),
 )
 
 # databases query builder
