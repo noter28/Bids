@@ -30,19 +30,11 @@ import datetime
 #     return await database.execute(query=query)
 
 
-# async def join_and_merge(payload):
-#     join_condition = client.c.leiCode == bids.c.clientLeiCode
-#     query = client.join(bids, join_condition)
-#     join_result = await database.fetchall(query=query)
-#     insert_stmt = client.insert().values(
-#         join_result
-#     )
-#
-#     return await database.execute(query=insert_stmt.on_conflict_do_update(
-#         constraint='pk_my_table',
-#         index_elements=['leiCode'],
-#         # set={}
-#     ))
+async def join_and_merge():
+    join_condition = client.c.leiCode == bids.c.clientLeiCode
+    query = client.join(bids, join_condition).select()
+    print("join_result111")
+    return await database.fetch_all(query=query)
 
 
 async def client_exist(payload):

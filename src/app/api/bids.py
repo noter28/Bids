@@ -31,6 +31,11 @@ async def create_bid(payload: BidSchema):
     return response_object
 
 
+@router.get("/join/")
+async def read_note():
+    note = await crud.join_and_merge()
+    return note
+
 # @router.get("/{id}/", response_model=NoteDB)
 # async def read_note(id: int):
 #     note = await crud.get(id)
