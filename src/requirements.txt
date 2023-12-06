@@ -5,6 +5,7 @@ psycopg2-binary==2.9.5
 SQLAlchemy==1.4.41
 uvicorn==0.20.0
 alembic==1.7.1
+Office365-REST-Python-Client==2.5.2
 
 # dev
 pytest==7.2.0

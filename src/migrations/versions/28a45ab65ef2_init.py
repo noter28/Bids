@@ -1,8 +1,8 @@
 """init
 
-Revision ID: d012524df66b
+Revision ID: 28a45ab65ef2
 Revises: 
-Create Date: 2023-11-16 14:25:01.314292
+Create Date: 2023-12-05 13:45:21.640580
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd012524df66b'
+revision = '28a45ab65ef2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,16 +23,18 @@ def upgrade():
     sa.Column('name', sa.String(length=50), nullable=True),
     sa.Column('leiCode', sa.String(length=50), nullable=True),
     sa.Column('created_date', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_date', sa.DateTime(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('last_updated', sa.DateTime(), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('leiCode')
     )
     op.create_table('osr',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=True),
     sa.Column('leiCode', sa.String(length=100), nullable=True),
     sa.Column('created_date', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_date', sa.DateTime(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('last_updated', sa.DateTime(), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('leiCode')
     )
     op.create_table('bids',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),

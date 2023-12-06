@@ -2,6 +2,10 @@ from fastapi import APIRouter, HTTPException
 
 from app.api import crud
 from app.api.models import BidSchema, BidDB
+from typing import List
+from office365.runtime.auth.authentication_context import AuthenticationContext
+from office365.sharepoint.client_context import ClientContext
+from office365.sharepoint.files.file import File
 
 router = APIRouter()
 
@@ -31,10 +35,21 @@ async def create_bid(payload: BidSchema):
     return response_object
 
 
-@router.get("/join/")
-async def read_note():
-    note = await crud.join_and_merge()
+
+@router.post("/join/")
+async def read_note(payload: List[BidSchema]):
+    note = await crud.join(payload)
     return note
+
+
+# @router.get("/download/")
+# async def download_ile():
+#     ctx_auth = AuthenticationContext(url)
+#     ctx_auth.acquire_token_for_user(username, password)
+#     ctx = ClientContext(url, ctx_auth)
+#     response = File.open_binary(ctx, "/Shared Documents/User Guide.docx")
+#     with open("./User Guide.docx", "wb") as local_file:
+#         local_file.write(response.content)
 
 # @router.get("/{id}/", response_model=NoteDB)
 # async def read_note(id: int):

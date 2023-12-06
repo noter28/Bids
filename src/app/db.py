@@ -1,5 +1,4 @@
 import os
-
 from sqlalchemy import (
     Column,
     UniqueConstraint,
@@ -14,7 +13,6 @@ from sqlalchemy import (
     text
 )
 from sqlalchemy.sql import func
-
 from databases import Database
 
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -47,9 +45,9 @@ osr = Table(
     metadata,
     Column("id", Integer, primary_key=True),
     Column("name", String(100)),
-    Column("leiCode", String(100)),
+    Column("leiCode", String(100), unique=True),
     Column("created_date", DateTime, server_default=func.now(), nullable=False),
-    Column("updated_date", DateTime, onupdate=func.now(), nullable=True),
+    Column("last_updated", DateTime, onupdate=func.now(), nullable=True),
 )
 
 
@@ -58,9 +56,9 @@ client = Table(
     metadata,
     Column("id", Integer, primary_key=True),
     Column("name", String(50)),
-    Column("leiCode", String(50)),
+    Column("leiCode", String(50), unique=True),
     Column("created_date", DateTime, server_default=func.now(), nullable=False),
-    Column("updated_date", DateTime, onupdate=func.now(), nullable=True),
+    Column("last_updated", DateTime, onupdate=func.now(), nullable=True),
 )
 
 # databases query builder
