@@ -3,79 +3,40 @@ import datetime
 from sqlalchemy.dialects.postgresql import insert
 
 
-
 async def join(payload):
-    # inserted_values = []
-    # client_leiCodes = []
     dict_payload = [item.dict() for item in payload]
-    # dict_payload = [item.client.dict() for item in payload]
 
-    print(dict_payload)
-    # for i in payload:
-    #     print(i.dict())
-
-    # for i in range(len(payload)):
-    #     inserted_values.append({'name': payload[i].client.name, 'leiCode': payload[i].client.leiCode})
-    #     client_leiCodes.append(payload[i].client.leiCode)
-
-    # print(inserted_values)
     insert_stmt = insert(client).values(
-        [{'name': item['client']['name'], 'leiCode': item['client']['leiCode']} for item in dict_payload])
-    on_conflict_stmt = insert_stmt.on_conflict_do_nothing(
-        index_elements=['leiCode']
-    )
+        [{'name': item['client']['name'],
+          'leiCode': item['client']['leiCode']} for item in dict_payload])
+    on_conflict_stmt = insert_stmt.on_conflict_do_nothing(index_elements=['leiCode'])
     await database.fetch_all(query=on_conflict_stmt)
-    subquery = await database.fetch_all(client.select().with_only_columns([client.c.id, client.c.leiCode]).
-                                        where(
+
+    subquery = await database.fetch_all(client.select().
+    with_only_columns([client.c.id, client.c.leiCode]).
+    where(
         client.c.leiCode.in_([item['client']['leiCode'] for item in dict_payload])))
 
-    b = []
+    lei_code_id_mapping = []
     for i in subquery:
-        b.append(dict(i._mapping))
-    print('TODO')
-    print([{'id': item['client']['name']} for item in dict_payload])
-    # print(next(item['id'] for item in b if item["leiCode"] == "25522104"))
-    print([item['id'] for item in b if item['leiCode'] == "25522104"])
-    a = []
+        lei_code_id_mapping.append(dict(i._mapping))
+    bids_rows = []
     for i in payload:
         payload = i
-        a.append({
-            # 'clientName': payload.client.name,
+        bids_rows.append({
             'clientLeiCode': payload.client.leiCode,
-            # clientType=payload.client.clientType,
             'beginDate': datetime.datetime.strptime(payload.beginDate, "%Y-%m-%d").date(),
             'osrName': payload.distributionCombinations[0]['osr']['name'],
-            # osrLeiCode=payload.distributionCombinations[0]['osr']['leiCode'],
             'ONE_A': int(payload.osrDistributions[0]['volume']),
             'ONE_B': int(payload.osrDistributions[1]['volume']),
             'TWO_A': int(payload.osrDistributions[2]['volume']),
             'TWO_B': int(payload.osrDistributions[3]['volume']),
-            'client_id': next(item['id'] for item in b if item['leiCode'] == payload.client.leiCode)
+            'client_id': next(item['id'] for item in lei_code_id_mapping if item['leiCode'] == payload.client.leiCode)
         })
-    print(a)
-
-        # subquery = await database.execute(client.select().where(client.c.name == 'rrrrrrrrr'))
-    # print(subquery)
-    query = (bids.insert().values(a))
-
-    # query1 = osr.insert().values
-    # return await database.execute(query=subquery)
-
-    # join_condition = client.c.leiCode == bids.c.clientLeiCode
-    # query = client.outerjoin(bids, join_condition).select()
-    # query = await database.fetch_all(query=query)
-
-    # outer_join_query = select([])
-
-    # a = []
-    # for i in query:
-    #     a.append(dict(i._mapping))
-    # print(a)
-    # ins = insert(bids).values(a)
-    # await database.execute(query=ins)
-
-    # query = query.select().where(query.c.clientLeiCode == payload.client.leiCode)
+    query = insert(bids).values(bids_rows).on_conflict_do_nothing(constraint='uix_1').returning(bids.c.id)
     return await database.fetch_all(query=query)
+    # return [{'name': item['client']['name'],
+    #          'leiCode': item['client']['leiCode']} for item in dict_payload]
 
 
 async def client_exist(payload):

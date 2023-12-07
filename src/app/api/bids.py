@@ -38,9 +38,15 @@ async def create_bid(payload: BidSchema):
 
 @router.post("/join/")
 async def read_note(payload: List[BidSchema]):
-    note = await crud.join(payload)
-    return note
-
+    data = await crud.join(payload)
+    return {
+        'status': 'success',
+        'message': 'Bids for OSR was successfully processed',
+        'data': data
+    }
+# @router.get("/excel/")
+# async def excel():
+#     pass
 
 # @router.get("/download/")
 # async def download_ile():
