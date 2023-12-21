@@ -36,7 +36,8 @@ bids = Table(
     Column("created_date", DateTime, server_default=func.now(), nullable=False),
     Column('last_updated', DateTime, nullable=True),
     Column("client_id", Integer, ForeignKey("client.id"), nullable=False),
-    UniqueConstraint('beginDate', 'ONE_A', 'ONE_B', 'TWO_A', 'TWO_B', 'clientLeiCode', 'osrName', name='uix_1'),
+    Column("osr_id", Integer, ForeignKey("osr.id"), nullable=False),
+    UniqueConstraint('beginDate', 'clientLeiCode', 'osrName', name='beginDate_clientLeiCode_osrName'),
 )
 
 
@@ -48,6 +49,7 @@ osr = Table(
     Column("leiCode", String(100), unique=True),
     Column("created_date", DateTime, server_default=func.now(), nullable=False),
     Column("last_updated", DateTime, onupdate=func.now(), nullable=True),
+    Column("link_to_template", String(1000), nullable=True),
 )
 
 
@@ -60,6 +62,8 @@ client = Table(
     Column("created_date", DateTime, server_default=func.now(), nullable=False),
     Column("last_updated", DateTime, onupdate=func.now(), nullable=True),
 )
+
+
 
 # databases query builder
 database = Database(DATABASE_URL)
