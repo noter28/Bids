@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 28a45ab65ef2
+Revision ID: 2367b0752c9b
 Revises: 
-Create Date: 2023-12-05 13:45:21.640580
+Create Date: 2023-12-21 17:31:40.011444
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '28a45ab65ef2'
+revision = '2367b0752c9b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,6 +33,7 @@ def upgrade():
     sa.Column('leiCode', sa.String(length=100), nullable=True),
     sa.Column('created_date', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('last_updated', sa.DateTime(), nullable=True),
+    sa.Column('link_to_template', sa.String(length=1000), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('leiCode')
     )
@@ -48,9 +49,12 @@ def upgrade():
     sa.Column('created_date', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('last_updated', sa.DateTime(), nullable=True),
     sa.Column('client_id', sa.Integer(), nullable=False),
+    sa.Column('osr_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['client_id'], ['client.id'], ),
+    sa.ForeignKeyConstraint(['osr_id'], ['osr.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('beginDate', 'ONE_A', 'ONE_B', 'TWO_A', 'TWO_B', 'clientLeiCode', 'osrName', name='uix_1')
+    sa.UniqueConstraint('beginDate', 'clientLeiCode', 'osrName', 'ONE_A', 'ONE_B', 'TWO_A', 'TWO_B', name='unique_bid'),
+    sa.UniqueConstraint('beginDate', 'client_id', 'osr_id', name='unique_3')
     )
     # ### end Alembic commands ###
 

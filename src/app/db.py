@@ -37,7 +37,9 @@ bids = Table(
     Column('last_updated', DateTime, nullable=True),
     Column("client_id", Integer, ForeignKey("client.id"), nullable=False),
     Column("osr_id", Integer, ForeignKey("osr.id"), nullable=False),
-    UniqueConstraint('beginDate', 'clientLeiCode', 'osrName', name='beginDate_clientLeiCode_osrName'),
+    UniqueConstraint('beginDate', 'clientLeiCode', 'osrName', 'ONE_A', 'ONE_B',
+                     'TWO_A', 'TWO_B', name='unique_bid'),
+    UniqueConstraint('beginDate', 'client_id', 'osr_id', name='unique_3'),
 )
 
 

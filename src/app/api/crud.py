@@ -27,19 +27,22 @@ async def is_exist(payload):
                 'leiCode': i['client']['leiCode']
             })
             on_conflict_stmt = insert_stmt.on_conflict_do_nothing(index_elements=['leiCode'])
-            await database.execute(query=on_conflict_stmt)
+            print(111111)
+            print(await database.fetch_one(query=on_conflict_stmt.returning(client.c.id)))
 
             # Get FK client ID for bid
             client_id_query = (client.select().with_only_columns([client.c.id])
-                               .where(osr.c.leiCode == i['client']['leiCode']))
+                               .where(client.c.leiCode == i['client']['leiCode']))
             client_id = await database.execute(query=client_id_query)
+            print(222222)
+            print(client_id)
 
             # Get FK osr ID for bid
             osr_id_query = (osr.select().with_only_columns([osr.c.id])
                             .where(osr.c.name == i['distributionCombinations'][0]['osr']['name']))
             osr_id = await database.execute(query=osr_id_query)
             # Insert bid
-            insert_bids_stmt = insert(bids).values({
+            stmt = insert(bids).values({
                 'clientLeiCode': i['client']['leiCode'],
                 'beginDate': datetime.datetime.strptime(i['beginDate'], "%Y-%m-%d").date(),
                 'osrName': i['distributionCombinations'][0]['osr']['name'],
@@ -50,7 +53,13 @@ async def is_exist(payload):
                 'client_id': client_id,
                 'osr_id': osr_id
             })
-            await database.execute(query=insert_bids_stmt)
+            on_conflict_stmt = stmt.on_conflict_do_update(constraint='unique_3',
+                                                          set_=dict(ONE_A=stmt.excluded.ONE_A,
+                                                                    ONE_B=stmt.excluded.ONE_B,
+                                                                    TWO_A=stmt.excluded.TWO_A,
+                                                                    TWO_B=stmt.excluded.TWO_B)
+                                                          )
+            await database.execute(query=on_conflict_stmt)
             print(exist)
     return exist
 
@@ -80,7 +89,7 @@ async def join(payload):
         'client_id': next(item['id'] for item in lei_code_id_mapping if item['leiCode'] == i.client.leiCode)
     } for i in payload]
     stmt = insert(bids).values(bids_rows)
-    on_update_stmt = stmt.on_conflict_do_update(constraint='beginDate_clientLeiCode_osrName',
+    on_update_stmt = stmt.on_conflict_do_update(constraint='unique_bid',
                                                 set_=dict(ONE_A=stmt.excluded.ONE_A,
                                                           ONE_B=stmt.excluded.ONE_B,
                                                           TWO_A=stmt.excluded.TWO_A,
