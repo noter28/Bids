@@ -1,9 +1,11 @@
 from fastapi import APIRouter, HTTPException
 
 from app.api import crud
-from app.api.models import BidSchema, BidDB
+from app.api.models import BidSchema
+from .auth import auth
+from .excel_ops import write_excel, generate_excel_file
 from typing import List
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 import os
 import msal
 import jwt
@@ -51,71 +53,39 @@ async def read_note(payload: List[BidSchema]):
 
 @router.get("/excel/")
 async def excel():
+
+    # wb = load_workbook('document.xlsx')
+    # wb.template = True
     # wb = Workbook()
-    # ws = wb.active
-    # ws['A3'] = 42
+    # ws = wb.active  # insert at the end (default)
+    # ws['A5'] = 55
     # wb.save("sample2.xlsx")
     # return 'success'
+    data = await crud.get_month_data('2023-08-01', 'АТ «ДТЕК ДНІПРОВСЬКІ ЕЛЕКТРОМЕРЕЖІ»')
+    data = [dict(i._mapping) for i in data]
+    wb = load_workbook('ОЕМ_  реестр_листопад.xlsx')
+    wb.template = True
+    wb.create_sheet('test')
+    second_list = wb['test']
+    list_of_lists = [[value for value in dictionary.values()] for dictionary in data]
+    print(list_of_lists)
+    for row in list_of_lists:
+        second_list.append(row)
+    wb.save("ОЕМ_  реестр_листопад.xlsx")
+    return list_of_lists
+    # accessToken = await auth()
+    # write_excel(accessToken)
+    # return await auth()
 
-    # Data for auth
-    accessToken = None
-    tenantID = 'e8c92bf5-2138-43f0-8e58-0c0382d2334e'
-    authority = 'https://login.microsoftonline.com/' + tenantID
-    clientID = 'd5918b13-ed1a-44b9-b6c3-bd08c8d209d6'
-    scope = ['https://graph.microsoft.com/.default']
-    thumbprint = 'BF399E409ECD6EEA08D9E389ED31D5748B16894B'
-    certfile = 'server.pem'
 
-    # Data for upload excel file
-    site_id = "8b2f1519-a497-4efe-8d83-b2a1d4d15d8e"
-    drive_id = 'b!GRUvi5ek_k6Ng7Kh1NFdjmu4BbllQgdHiWuZ2hmgRDm97BYuvkPkRLzzr8z5Gp3v'
-    file_path = 'sample2.xlsx'
-    folder_name = 'test2'
-    file_name = 'sample8.xlsx'
-    upload_url = f'https://graph.microsoft.com/v1.0/sites/{site_id}/drives/{drive_id}/items/root:/{folder_name}/{file_name}:/content'
-
-    def msal_certificate_auth(clientID, scope, authority, thumbprint, certfile):
-        app = msal.ConfidentialClientApplication(clientID, authority=authority,
-                                                 client_credential={"thumbprint": thumbprint,
-                                                                    "private_key": open(certfile).read()})
-        result = app.acquire_token_for_client(scopes=scope)
-        return result
-
-    def msal_jwt_expiry(accessToken):
-        decodedAccessToken = jwt.decode(accessToken, verify=False)
-        tokenExpiry = datetime.fromtimestamp(int(decodedAccessToken['exp']))
-        print("Token Expires at: " + str(tokenExpiry))
-        return tokenExpiry
-        # Auth
-    try:
-        if not accessToken:
-            try:
-                # Get a new Access Token using Client Credentials Flow and a Self Signed Certificate
-                accessToken = msal_certificate_auth(clientID, scope, authority, thumbprint, certfile)
-            except Exception as err:
-                print('Error acquiring authorization token. Check your tenantID, clientID and certficate thumbprint.')
-                print(err)
-        tokenExpiry = msal_jwt_expiry(accessToken['access_token'])
-        time_to_expiry = tokenExpiry - datetime.now()
-        if time_to_expiry.seconds < 600:
-            print("Access Token Expiring Soon. Renewing Access Token.")
-            accessToken = msal_certificate_auth(clientID, scope, authority, thumbprint, certfile)
-
-    except Exception as err:
-        print(err)
-    # Query
-    try:
-        with open(file_path, 'rb') as file:
-            headers = {
-                'Authorization': f"Bearer {accessToken['access_token']}",
-                'Content-Type': 'application/octet-stream',
-                'Content-Length': str(os.path.getsize(file_path))
-            }
-            response = requests.put(upload_url, headers=headers, data=file)
-    except Exception as err:
-        print(err)
-    return response.json()
-
+@router.post('/all_in_one/')
+async def all(payload: List[BidSchema]):
+    list_of_changed_DSO = await crud.is_exist(payload)
+    for DSO in list_of_changed_DSO:  # list_of_changed_DSO = [[name1, date1], [name2, date2]]
+        data = await crud.get_month_data(DSO['beginDate'], DSO['osr_name'])
+        print(data)
+        await generate_excel_file(data, DSO['link_to_template'])
+    return list_of_changed_DSO
 
 @router.post("/exist/")
 async def exist(payload: List[BidSchema]):
