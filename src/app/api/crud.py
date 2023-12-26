@@ -35,16 +35,12 @@ async def is_exist(payload):
             client_id_query = (client.select().with_only_columns([client.c.id])
                                .where(client.c.leiCode == i['client']['leiCode']))
             client_id = await database.execute(query=client_id_query)
-            print(222222)
-            print(client_id)
 
             # Get FK osr ID for bid
             osr_query = (osr.select().with_only_columns([osr.c.id, osr.c.link_to_template])
                             .where(osr.c.name == i['distributionCombinations'][0]['osr']['name']))
             osr_data = await database.fetch_one(query=osr_query)
-            print('osr_id', osr_data._mapping)
-            values = dict(osr_data._mapping)
-            print(values)
+
             # Insert bid
             stmt = insert(bids).values({
                 'clientLeiCode': i['client']['leiCode'],
@@ -67,7 +63,6 @@ async def is_exist(payload):
             list_of_changed_DSO.append({'beginDate': i['beginDate'],
                                         'osr_name': i['distributionCombinations'][0]['osr']['name'],
                                         'link_to_template': osr_data['link_to_template']})
-            print(exist)
     return list_of_changed_DSO
 
 

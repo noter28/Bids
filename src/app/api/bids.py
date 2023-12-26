@@ -13,6 +13,16 @@ import json
 import requests
 from datetime import datetime
 
+file_path = 'ОЕМ_  реестр_листопад.xlsx'
+site_id = "8b2f1519-a497-4efe-8d83-b2a1d4d15d8e"
+drive_id = 'b!GRUvi5ek_k6Ng7Kh1NFdjmu4BbllQgdHiWuZ2hmgRDm97BYuvkPkRLzzr8z5Gp3v'
+folder_name = 'test2'
+file_name = 'sample8.xlsx'
+upload_url = f'https://graph.microsoft.com/v1.0/sites/{site_id}/drives/{drive_id}/items/root:/{folder_name}/{file_name}:/content'
+
+
+
+
 router = APIRouter()
 
 
@@ -85,6 +95,8 @@ async def all(payload: List[BidSchema]):
         data = await crud.get_month_data(DSO['beginDate'], DSO['osr_name'])
         print(data)
         await generate_excel_file(data, DSO['link_to_template'])
+    accessToken = await auth()
+    await write_excel(accessToken, file_path, upload_url)
     return list_of_changed_DSO
 
 @router.post("/exist/")
