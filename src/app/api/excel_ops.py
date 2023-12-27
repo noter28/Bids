@@ -18,9 +18,10 @@ async def generate_excel_file(data, file_name):
     wb = load_workbook(file_name)
     wb.create_sheet('test')
     second_list = wb['test']
+    # TODO fix creating new sheet if exist
     print(second_list)
-    test = wb['sdjfhkjdsf']
-    print(test)
+    # test = wb['sdjfhkjdsf']
+    # print(test)
     list_of_lists = [[value for value in dictionary.values()] for dictionary in data]
     print(1111111)
     for row in list_of_lists:
